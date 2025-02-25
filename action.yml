@@ -10,16 +10,19 @@ runs:
         run: |
           sudo apt update -y
           sudo apt install -y openvpn
+        shell: bash
  
       - name: Create VPN Credentials File
         run: |
           echo "${{ secrets.VPN_USERNAME }}" > ${{ secrets.VPN_AUTHOR }}
           echo "${{ secrets.VPN_PASSWORD }}" >> ${{ secrets.VPN_AUTHOR }}
           chmod 600 ${{ secrets.VPN_AUTHOR }}
+        shell: bash
  
       - name: Start OpenVPN
         run: |
           sudo nohup openvpn --verb 4 --config $(pwd)/${{ secrets.VPN_OVPN }} --auth-user-pass $(pwd)/${{ secrets.VPN_AUTHOR }} > $HOME/openvpn.log 2>&1 &
+        shell: bash
  
       - name: Try connect to Gitlab by VPN
         run: |
@@ -32,6 +35,7 @@ runs:
            echo "OpenVPN start failed, retrying..."
           done
           cat $HOME/openvpn.log
+        shell: bash
  
       - name: Clone GitLab repository
         run: |
@@ -40,3 +44,4 @@ runs:
       - name: Stop OpenVPN
         run: |
           sudo pkill -f openvpn
+        shell: bash
