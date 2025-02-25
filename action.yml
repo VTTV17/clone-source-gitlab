@@ -40,6 +40,7 @@ runs:
       - name: Clone GitLab repository
         run: |
           git clone ${{ secrets.GITLAB_REPOSITORY }} GoSELL-Automation
+        shell: bash
  
       - name: Stop OpenVPN
         run: |
