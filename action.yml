@@ -1,5 +1,25 @@
 name: 'Clone Source From Gitlab Workflow Action'
 description: 'Connect VPN then clone source form github'
+inputs:
+  VPN_USERNAME:
+    description: 'VPN_USERNAME'
+    required: true
+  VPN_PASSWORD:
+    description: 'VPN_PASSWORD'
+    required: true
+  VPN_AUTHOR:
+    description: 'VPN_AUTHOR'
+    required: true
+  VPN_OVPN:
+    description: 'VPN_OVPN'
+    required: true
+  GITLAB_HOST:
+    description: 'GITLAB_HOST'
+    required: true
+  GITLAB_REPOSITORY:
+    description: 'GITLAB_REPOSITORY'
+    required: true
+    
 runs:
   using: 'composite'
   steps:
@@ -14,20 +34,20 @@ runs:
 
         - name: Create VPN Credentials File
           run: |
-                echo "${{ secrets.VPN_USERNAME }}" > ${{ secrets.VPN_AUTHOR }}
-                echo "${{ secrets.VPN_PASSWORD }}" >> ${{ secrets.VPN_AUTHOR }}
-                chmod 600 ${{ secrets.VPN_AUTHOR }}
+                echo "${{ inputs.VPN_USERNAME }}" > ${{ inputs.VPN_AUTHOR }}
+                echo "${{ inputs.VPN_PASSWORD }}" >> ${{ inputs.VPN_AUTHOR }}
+                chmod 600 ${{ inputs.VPN_AUTHOR }}
           shell: bash
 
         - name: Start OpenVPN
           run: |
-            sudo nohup openvpn --verb 4 --config $(pwd)/${{ secrets.VPN_OVPN }} --auth-user-pass $(pwd)/${{ secrets.VPN_AUTHOR }} > $HOME/openvpn.log 2>&1 &
+            sudo nohup openvpn --verb 4 --config $(pwd)/${{ inputs.VPN_OVPN }} --auth-user-pass $(pwd)/${{ inputs.VPN_AUTHOR }} > $HOME/openvpn.log 2>&1 &
           shell: bash
 
         - name: Try connect to Gitlab by VPN
           run: |
             for i in {1..5}; do
-             echo "$(curl -Is ${{ secrets.GITLAB_HOST }} | head -1)"
+             echo "$(curl -Is ${{ inputs.GITLAB_HOST }} | head -1)"
              if grep -q "Initialization Sequence Completed" $HOME/openvpn.log; then
                echo "OpenVPN started successfully."
                break
@@ -39,7 +59,7 @@ runs:
 
         - name: Clone GitLab repository
           run: |
-            git clone ${{ secrets.GITLAB_REPOSITORY }} GoSELL-Automation
+            git clone ${{ inputs.GITLAB_REPOSITORY }} GoSELL-Automation
           shell: bash
 
         - name: Stop OpenVPN
