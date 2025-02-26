@@ -3,46 +3,46 @@ description: 'Connect VPN then clone source form github'
 runs:
   using: 'composite'
   steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
-      
-    - name: Install OpenVPN
-        run: |
-          sudo apt update -y
-          sudo apt install -y openvpn
-        shell: bash
- 
-      - name: Create VPN Credentials File
-        run: |
-          echo "${{ secrets.VPN_USERNAME }}" > ${{ secrets.VPN_AUTHOR }}
-          echo "${{ secrets.VPN_PASSWORD }}" >> ${{ secrets.VPN_AUTHOR }}
-          chmod 600 ${{ secrets.VPN_AUTHOR }}
-        shell: bash
- 
-      - name: Start OpenVPN
-        run: |
-          sudo nohup openvpn --verb 4 --config $(pwd)/${{ secrets.VPN_OVPN }} --auth-user-pass $(pwd)/${{ secrets.VPN_AUTHOR }} > $HOME/openvpn.log 2>&1 &
-        shell: bash
- 
-      - name: Try connect to Gitlab by VPN
-        run: |
-          for i in {1..5}; do
-           echo "$(curl -Is ${{ secrets.GITLAB_HOST }} | head -1)"
-           if grep -q "Initialization Sequence Completed" $HOME/openvpn.log; then
-             echo "OpenVPN started successfully."
-             break
-           fi
-           echo "OpenVPN start failed, retrying..."
-          done
-          cat $HOME/openvpn.log
-        shell: bash
- 
-      - name: Clone GitLab repository
-        run: |
-          git clone ${{ secrets.GITLAB_REPOSITORY }} GoSELL-Automation
-        shell: bash
- 
-      - name: Stop OpenVPN
-        run: |
-          sudo pkill -f openvpn
-        shell: bash
+        - name: Checkout code
+          uses: actions/checkout@v2
+
+        - name: Install OpenVPN
+          run: |
+              sudo apt update -y
+              sudo apt install -y openvpn
+          shell: bash
+
+        - name: Create VPN Credentials File
+          run: |
+                echo "${{ secrets.VPN_USERNAME }}" > ${{ secrets.VPN_AUTHOR }}
+                echo "${{ secrets.VPN_PASSWORD }}" >> ${{ secrets.VPN_AUTHOR }}
+                chmod 600 ${{ secrets.VPN_AUTHOR }}
+          shell: bash
+
+        - name: Start OpenVPN
+          run: |
+            sudo nohup openvpn --verb 4 --config $(pwd)/${{ secrets.VPN_OVPN }} --auth-user-pass $(pwd)/${{ secrets.VPN_AUTHOR }} > $HOME/openvpn.log 2>&1 &
+          shell: bash
+
+        - name: Try connect to Gitlab by VPN
+          run: |
+            for i in {1..5}; do
+             echo "$(curl -Is ${{ secrets.GITLAB_HOST }} | head -1)"
+             if grep -q "Initialization Sequence Completed" $HOME/openvpn.log; then
+               echo "OpenVPN started successfully."
+               break
+             fi
+             echo "OpenVPN start failed, retrying..."
+            done
+            cat $HOME/openvpn.log
+          shell: bash
+
+        - name: Clone GitLab repository
+          run: |
+            git clone ${{ secrets.GITLAB_REPOSITORY }} GoSELL-Automation
+          shell: bash
+
+        - name: Stop OpenVPN
+          run: |
+            sudo pkill -f openvpn
+          shell: bash
